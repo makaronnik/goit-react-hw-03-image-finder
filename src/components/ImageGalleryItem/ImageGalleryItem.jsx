@@ -1,12 +1,8 @@
 import PropTypes from 'prop-types';
 import ImageGalleryItemStyled from './ImageGalleryItemStyled';
 
-const ImageGalleryItem = props => {
-  return (
-    <ImageGalleryItemStyled>
-      <img src="" alt="" />
-    </ImageGalleryItemStyled>
-  );
+const ImageGalleryItem = ({ children }) => {
+  return <ImageGalleryItemStyled>{children}</ImageGalleryItemStyled>;
 };
 
 ImageGalleryItem.propTypes = {};

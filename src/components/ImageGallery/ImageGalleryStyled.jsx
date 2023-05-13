@@ -11,6 +11,10 @@ const ImageGalleryStyled = styled.ul`
   list-style: none;
   margin-left: auto;
   margin-right: auto;
+
+  @media (min-width: 1376px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
 `;
 
 export default ImageGalleryStyled;
