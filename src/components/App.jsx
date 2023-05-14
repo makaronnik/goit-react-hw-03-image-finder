@@ -5,6 +5,7 @@ import Pixabay from '../api/Pixabay';
 import Loader from './Loader/Loader';
 import ImageGallery from './ImageGallery/ImageGallery';
 import ErrorMessage from './ErrorMessage/ErrorMessage';
+import Button from './Button/Button';
 
 export class App extends Component {
   state = {
@@ -23,12 +24,23 @@ export class App extends Component {
     ) {
       this.fetchImages();
     }
+
+    if (
+      prevState.images.length !== 0 &&
+      this.state.images.length > prevState.images.length
+    ) {
+      this.scrollDown();
+    }
   }
 
   onSubmit = searchQuery => {
     searchQuery = searchQuery.trim();
 
     this.setState({ searchQuery, page: 1, images: [] });
+  };
+
+  onLoadMore = () => {
+    this.setState(prevState => ({ page: prevState.page + 1 }));
   };
 
   fetchImages = async () => {
@@ -59,16 +71,18 @@ export class App extends Component {
         ],
         error: null,
       }));
-
-      // window.scrollTo({
-      //   top: document.documentElement.scrollHeight,
-      //   behavior: 'smooth',
-      // });
     } catch (error) {
       this.setState({ error });
     } finally {
       this.setState({ isLoading: false });
     }
+  };
+
+  scrollDown = () => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth',
+    });
   };
 
   render() {
@@ -84,6 +98,9 @@ export class App extends Component {
           </ErrorMessage>
         )}
         {this.state.isLoading && <Loader />}
+        {this.state.images.length > 0 && !this.state.isLoading && (
+          <Button onLoadMore={this.onLoadMore} />
+        )}
       </AppStyled>
     );
   }
