@@ -5,6 +5,8 @@ const ImageGalleryItem = ({ children }) => {
   return <ImageGalleryItemStyled>{children}</ImageGalleryItemStyled>;
 };
 
-ImageGalleryItem.propTypes = {};
+ImageGalleryItem.propTypes = {
+  children: PropTypes.node,
+};
 
 export default ImageGalleryItem;

@@ -1,20 +1,27 @@
 import { Component } from 'react';
+import { createPortal } from 'react-dom';
+import toast, { Toaster } from 'react-hot-toast';
 import AppStyled from './AppStyled';
 import Searchbar from './Searchbar/Searchbar';
 import Pixabay from '../api/Pixabay';
 import Loader from './Loader/Loader';
 import ImageGallery from './ImageGallery/ImageGallery';
-import ErrorMessage from './ErrorMessage/ErrorMessage';
 import Button from './Button/Button';
+import Modal from './Modal/Modal';
 
 export class App extends Component {
   state = {
     searchQuery: '',
     images: [],
+    total: 0,
     page: 1,
     isLoading: false,
-    error: null,
+    modalImgId: null,
   };
+
+  componentDidMount() {
+    window.addEventListener('keydown', this.handleKeyDown);
+  }
 
   componentDidUpdate(_, prevState) {
     if (
@@ -33,30 +40,51 @@ export class App extends Component {
     }
   }
 
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.handleKeyDown);
+  }
+
   onSubmit = searchQuery => {
     searchQuery = searchQuery.trim();
 
-    this.setState({ searchQuery, page: 1, images: [] });
+    this.setState({ searchQuery, page: 1, images: [], total: 0 });
   };
 
   onLoadMore = () => {
     this.setState(prevState => ({ page: prevState.page + 1 }));
   };
 
+  toggleModal = imgId => {
+    this.setState({ modalImgId: imgId });
+  };
+
+  handleKeyDown = e => {
+    if (e.code === 'Escape') {
+      this.toggleModal(null);
+    }
+  };
+
   fetchImages = async () => {
     const api = new Pixabay();
     const { searchQuery, page } = this.state;
 
-    this.setState({ isLoading: true, error: null });
+    this.setState({ isLoading: true });
 
     try {
       const response = await api.getImages(searchQuery, page);
       const images = response.data.hits;
+      const total = response.data.total;
 
       if (!images.length) {
-        this.setState({ error: new Error('No images found') });
+        toast.error(
+          this.state.images.length ? 'No more images' : 'No images found'
+        );
 
         return;
+      }
+
+      if (page === 1) {
+        toast.success(`${total} images were found`);
       }
 
       this.setState(prevState => ({
@@ -69,10 +97,10 @@ export class App extends Component {
             tags,
           })),
         ],
-        error: null,
+        total,
       }));
     } catch (error) {
-      this.setState({ error });
+      toast.error(error.message);
     } finally {
       this.setState({ isLoading: false });
     }
@@ -86,20 +114,29 @@ export class App extends Component {
   };
 
   render() {
+    const { images, isLoading, modalImgId, total } = this.state;
+
     return (
       <AppStyled>
         <Searchbar onSubmit={this.onSubmit} />
-        {this.state.images.length > 0 && (
-          <ImageGallery images={this.state.images} />
+        {images.length > 0 && (
+          <ImageGallery images={images} toggleModal={this.toggleModal} />
         )}
-        {this.state.error && (
-          <ErrorMessage>
-            Whoops, something went wrong: {this.state.error.message}
-          </ErrorMessage>
-        )}
-        {this.state.isLoading && <Loader />}
-        {this.state.images.length > 0 && !this.state.isLoading && (
+        {isLoading && <Loader />}
+        {images.length > 0 && !isLoading && images.length < total && (
           <Button onLoadMore={this.onLoadMore} />
+        )}
+        {modalImgId &&
+          createPortal(
+            <Modal
+              image={images.find(image => image.id === modalImgId)}
+              toggleModal={() => this.toggleModal(null)}
+            />,
+            document.getElementById('modal-root')
+          )}
+        {createPortal(
+          <Toaster position="top-right" />,
+          document.getElementById('toaster-root')
         )}
       </AppStyled>
     );

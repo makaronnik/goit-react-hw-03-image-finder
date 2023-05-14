@@ -1,8 +1,7 @@
-import PropTypes from 'prop-types';
 import { ThreeDots } from 'react-loader-spinner';
 import LoaderStyled from './LoaderStyled';
 
-const Loader = props => {
+const Loader = () => {
   return (
     <LoaderStyled>
       <ThreeDots
@@ -15,7 +14,5 @@ const Loader = props => {
     </LoaderStyled>
   );
 };
-
-Loader.propTypes = {};
 
 export default Loader;
