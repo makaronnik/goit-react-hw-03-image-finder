@@ -19,10 +19,6 @@ export class App extends Component {
     modalImgId: null,
   };
 
-  componentDidMount() {
-    window.addEventListener('keydown', this.handleKeyDown);
-  }
-
   componentDidUpdate(_, prevState) {
     if (
       this.state.searchQuery !== '' &&
@@ -40,10 +36,6 @@ export class App extends Component {
     }
   }
 
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.handleKeyDown);
-  }
-
   onSubmit = searchQuery => {
     searchQuery = searchQuery.trim();
 
@@ -56,12 +48,6 @@ export class App extends Component {
 
   toggleModal = imgId => {
     this.setState({ modalImgId: imgId });
-  };
-
-  handleKeyDown = e => {
-    if (e.code === 'Escape') {
-      this.toggleModal(null);
-    }
   };
 
   fetchImages = async () => {
@@ -126,14 +112,12 @@ export class App extends Component {
         {images.length > 0 && !isLoading && images.length < total && (
           <Button onLoadMore={this.onLoadMore} />
         )}
-        {modalImgId &&
-          createPortal(
-            <Modal
-              image={images.find(image => image.id === modalImgId)}
-              toggleModal={() => this.toggleModal(null)}
-            />,
-            document.getElementById('modal-root')
-          )}
+        {modalImgId && (
+          <Modal
+            image={images.find(image => image.id === modalImgId)}
+            toggleModal={() => this.toggleModal(null)}
+          />
+        )}
         {createPortal(
           <Toaster position="top-right" />,
           document.getElementById('toaster-root')
